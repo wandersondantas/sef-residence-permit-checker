@@ -1,0 +1,37 @@
+name: SEF Visa Renewal Checker
+
+on:
+  schedule:
+    - cron: '0 7 * * *'  # Runs at 8 AM Lisbon time (7 AM UTC during standard time, 6 AM UTC during daylight saving)
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  check-visa-renewal:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Install Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+    
+    - name: Run Visa Renewal Checker
+      env:
+        SEF_USERNAME: ${{ secrets.SEF_USERNAME }}
+        SEF_PASSWORD: ${{ secrets.SEF_PASSWORD }}
+        SEF_RESIDENCY_NUMBER: ${{ secrets.SEF_RESIDENCY_NUMBER }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: python visa_checker.py
